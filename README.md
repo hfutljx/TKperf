@@ -174,7 +174,8 @@
 
 ### tkperf
 ```
-usage: tkperf [-h] [-v] [-d] [-q] [-nj NUMJOBS] [-iod IODEPTH] [-rt RUNTIME]
+usage: tkperf [-h] [-v] [-d] [-q] [-nj NUMJOBS] [-iod IODEPTH] [-rt RUNTIME] [-ioe IOENGINE] 
+              [-hp HIPRI] [-sp SQTHREAD_POLL] [-fb FIXEDBUFS] [-spc SQTHREAD_POLL_CPU]
               [-i {sas,nvme,fusion}] [-xml] [-rfb] [-dsc DESC_FILE]
               [-c CONFIG] [-ft] [-fm FEATURE_MATRIX] [-hddt {iops,tp}]
               [-ssdt {iops,lat,tp,writesat}] [-m MAIL] [-s SMTP]
@@ -199,6 +200,17 @@ optional arguments:
   -rt RUNTIME, --runtime RUNTIME
                         specify the fio runtime of one test round, if not set
                         this is 60 seconds
+  -ioe IOENGINE, --ioengine IOENGINE
+                        specify the fio ioengine of one test round, if not set
+                        this is libaio
+  -hp HIPRI, --hipri HIPRI
+                        use polled IO completions, if io_uring is used
+  -sp SQTHREAD_POLL, --sqthread_poll SQTHREAD_POLL
+                        pre map IO buffers, if io_uring is used
+  -fb FIXEDBUFS, --fixedbufs FIXEDBUFS
+                        offload submission/completion to kernel thread, if io_uring is used
+  -spc SQTHREAD_POLL_CPU, --sqthread_poll_cpu SQTHREAD_POLL_CPU
+                        what CPU to run SQ thread polling on, if io_uring is used
   -i {sas,nvme,fusion}, --interface {sas,nvme,fusion}
                         specify optional device interface
   -xml, --fromxml       don't run tests but load test objects from xml file

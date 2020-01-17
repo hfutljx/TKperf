@@ -289,8 +289,8 @@ class PerfTest(object):
         ''' The main run method, runs tests, generates plots and rst report. '''
         self.runTests()
         self.toXml()
-        self.genPlots()
-        self.toRst()
+        #self.genPlots()
+        #self.toRst()
 
 class SsdPerfTest(PerfTest):
     '''

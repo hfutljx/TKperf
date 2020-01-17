@@ -33,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument("-nj","--numjobs",help="specify number of jobs for fio",type=int)
     parser.add_argument("-iod","--iodepth",help="specify iodepth for libaio used by fio",type=int)
     parser.add_argument("-rt","--runtime",help="specify the fio runtime of one test round, if not set this is 60 seconds",type=int)
+    parser.add_argument("-ioe","--ioengine",help="specify the fio ioengine of one test round, if not set this is libaio")
     parser.add_argument("-i","--interface",help="specify optional device interface",choices=["sas","nvme","fusion","usb","sdcard","compactflash"])
     parser.add_argument("-xml","--fromxml",help="don't run tests but load test objects from xml file",
                         action='store_true')
@@ -53,6 +54,10 @@ if __name__ == '__main__':
     parser.add_argument("-m","--mail",help="Send reports or errors to mail address, needs -s to be set")
     parser.add_argument("-s","--smtp",help="Use the specified smtp server to send mails, uses port 25 to connect")
     parser.add_argument("-g","--gen_report",help="Set and specify command to generate pdf report, e.g. rst2pdf")
+    parser.add_argument("-hp","--hipri",help="use polled IO completions, if io_uring is used")
+    parser.add_argument("-sp","--sqthread_poll",help="pre map IO buffers, if io_uring is used")
+    parser.add_argument("-fb","--fixedbufs",help="offload submission/completion to kernel thread, if io_uring is used")
+    parser.add_argument("-spc","--sqthread_poll_cpu",help="what CPU to run SQ thread polling on, if io_uring is used")
     args = parser.parse_args()
     # Configure logging levels
     logformat = '%(asctime)s %(name)-8s %(levelname)-8s %(message)s'
@@ -83,6 +88,16 @@ if __name__ == '__main__':
         options.setIod(args.iodepth)
     if args.runtime != None:
         options.setRuntime(args.runtime)
+    if args.ioengine != None:
+        options.setIOEngine(args.ioengine)
+    if args.hipri != None:
+        options.setHipri(args.hipri)
+    if args.fixedbufs != None:
+        options.setFixedbufs(args.fixedbufs)
+    if args.sqthread_poll != None:
+        options.setSqthread_poll(args.sqthread_poll)
+    if args.sqthread_poll_cpu != None:
+        options.setSqthread_poll_cpu(args.sqthread_poll_cpu)
     if args.refill_buffers == True:
         xargs = ['refill_buffers']
         options.setXargs(xargs)

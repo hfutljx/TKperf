@@ -14,7 +14,7 @@ class StdyState(object):
     Used to define a stable state of a device
     '''
     ## Max number of carried out test rounds.
-    testRnds = 25
+    testRnds = 6
     ## Always use a sliding window of 4 to measure performance values.
     testMesWindow = 4
 

@@ -6,6 +6,7 @@ import logging
 import re
 import json
 from lxml import etree
+from collections import OrderedDict
 
 class FioJob(object):
     '''
@@ -39,7 +40,7 @@ class FioJob(object):
         ## Fio version
         self.__fioVersion = None
         ## Key value arguments e.g. name="test"
-        self.__fioKVArgs = {}
+        self.__fioKVArgs = OrderedDict()
         ## Single arguments e.g. group_reporting
         self.__fioSglArgs = []
 
@@ -130,6 +131,7 @@ class FioJob(object):
     def prepKVArgs(self):
         ''' Generate an argument list out of the dictionary suited for fio. '''
         argList = [self.__fioPath]
+        argKV = self.__fioKVArgs
         for k,v in self.__fioKVArgs.iteritems():
             argList.append('--' + k + '=' + v)
         return argList

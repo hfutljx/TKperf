@@ -81,12 +81,12 @@ class DeviceTest(object):
         self.__fioJob.addKVArg("name",self.__testname)
         self.__fioJob.addKVArg("direct","1")
         self.__fioJob.addSglArg("minimal")
-        self.__fioJob.addKVArg("ioengine","libaio")
         self.__fioJob.addSglArg("time_based")
         if self.__options == None:
             self.__fioJob.addKVArg("numjobs",str(1))
             self.__fioJob.addKVArg("iodepth",str(1))
             self.__fioJob.addKVArg("runtime",str(60))
+            self.__fioJob.addKVArg("ioengine","libaio")
         else:
             if self.getOptions().getNj() != None:
                 self.__fioJob.addKVArg("numjobs",str(self.getOptions().getNj()))
@@ -94,9 +94,21 @@ class DeviceTest(object):
                 self.__fioJob.addKVArg("iodepth",str(self.getOptions().getIod()))
             if self.getOptions().getRuntime() != None:
                 self.__fioJob.addKVArg("runtime",str(self.getOptions().getRuntime()))
+            if self.getOptions().getIOEngine() != None:
+                self.__fioJob.addKVArg("ioengine",str(self.getOptions().getIOEngine()))
+                if self.getOptions().getIOEngine() == "io_uring":
+                    if self.getOptions().getHipri() != None:
+                        self.__fioJob.addKVArg("hipri",str(self.getOptions().getHipri()))
+                    if self.getOptions().getSqthread_poll() != None:
+                        self.__fioJob.addKVArg("sqthread_poll",str(self.getOptions().getSqthread_poll()))
+                    if self.getOptions().getFixedbufs() != None:
+                        self.__fioJob.addKVArg("fixedbufs",str(self.getOptions().getFixedbufs()))
+                    if self.getOptions().getSqthread_poll_cpu() != None:
+                        self.__fioJob.addKVArg("sqthread_poll_cpu",str(self.getOptions().getSqthread_poll_cpu()))
             if self.getOptions().getXargs() != None:
                 for arg in self.getOptions().getXargs():
                     self.__fioJob.addSglArg(arg)
+        argkv = self.__fioJob.getKVArgs()
         self.__fioJob.addSglArg("group_reporting")
 
     @abstractmethod
@@ -123,9 +135,11 @@ class SsdIopsTest(DeviceTest):
     Representing an IOPS test for a ssd based device.
     '''
     ##Labels of block sizes
-    bsLabels = ["1024k","128k","64k","32k","16k","8k","4k","512"]
+    #bsLabels = ["1024k","128k","64k","32k","16k","8k","4k","512"]
+    bsLabels = ["4k"]
     ##Percentages of mixed workloads
-    mixWlds = [100,95,65,50,35,5,0]
+    #mixWlds = [100,95,65,50,35,5,0]
+    mixWlds = [100]
 
     def __init__(self,testname,device,options=None):
         '''
@@ -164,14 +178,17 @@ class SsdIopsTest(DeviceTest):
             for j in SsdIopsTest.bsLabels:
                 self.getFioJob().addKVArg("rwmixread",str(i))
                 self.getFioJob().addKVArg("bs",j)
-                call,jobOut = self.getFioJob().start()
-                if call == False:
-                    exit(1)
-                logging.info("mixLoad: " +str(i))
-                logging.info("bs: "+j)
-                logging.info(jobOut)
-                logging.info("######")
-                rwRow.append(self.getFioJob().getIOPS(jobOut))
+                for k in range(1,10):
+                    iodepth = 2**(k-1)                    
+                    self.getFioJob().getKVArgs()["iodepth"] = str(iodepth)                    
+                    call,jobOut = self.getFioJob().start()
+                    if call == False:
+                        exit(1)
+                    logging.info("mixLoad: " +str(i))
+                    logging.info("bs: "+j)
+                    logging.info(jobOut)
+                    logging.info("######")
+                    rwRow.append(self.getFioJob().getIOPS(jobOut))
             rndMatrix.append(rwRow)
         return rndMatrix
 
@@ -194,7 +211,8 @@ class SsdIopsTest(DeviceTest):
             self.getRndMatrices().append(rndMatrix)
             # Use the last row and its next to last value
             #-> 0/100% r/w and 4k for steady state detection
-            steadyValues.append(rndMatrix[-1][-2])
+            #steadyValues.append(rndMatrix[-1][-2])
+            steadyValues.append(rndMatrix[-1][-1])
             xranges.append(i)
             if i > 4:
                 xranges.popleft()
@@ -452,7 +470,7 @@ class SsdTPTest(DeviceTest):
     A class to carry out the Throughput test.
     '''
     ##Labels of block sizes for throughput test
-    bsLabels = ["1024k","64k","8k","4k","512",]
+    bsLabels = ["2048k","1024k","64k","8k","4k","512",]
     
     def __init__(self,testname,device,options):
         '''
@@ -544,7 +562,7 @@ class SsdTPTest(DeviceTest):
                     break
                 
                 # Use 1M block sizes sequential write for steady state detection
-                if j == "1024k":
+                if j == "2048k":
                     stdyValsWrite.append(tpWrite)
                     xrangesWrite.append(i)
                     if i > 4:
@@ -894,7 +912,7 @@ class HddTPTest(DeviceTest):
     ## Number of rounds to carry out the tests
     maxRnds = 128
     ##Labels of block sizes for throughput test
-    bsLabels = ["1024k","4k"]
+    bsLabels = ["4k"]
     
     def __init__(self,testname,device,options=None):
         '''
