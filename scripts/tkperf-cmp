@@ -61,14 +61,16 @@ if __name__ == '__main__':
             dummyDev = SSD('ssd',None,file)
             myTest = SsdPerfTest(file, dummyDev, options)
         if args.mode == 'hdd':
+            options = Options()
             dummyDev = HDD('hdd',None,file)
             myTest = HddPerfTest(file, dummyDev, options)
         myTest.fromXml()
         toCompare.append(myTest)
 
-    pcp.compWriteSatIOPSPlt(toCompare, args.folder)
+    if args.mode == 'ssd' or args.mode == 'raid':
+    	pcp.compWriteSatIOPSPlt(toCompare, args.folder)
+	pcp.compILPlt(toCompare, 'LAT', args.folder)
     pcp.compILPlt(toCompare, 'IOPS', args.folder)
-    pcp.compILPlt(toCompare, 'LAT', args.folder)
     pcp.compTPPlt(toCompare, args.folder)
     # Check if a zip archive should be created
     if args.zip:

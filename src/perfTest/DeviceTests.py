@@ -81,12 +81,12 @@ class DeviceTest(object):
         self.__fioJob.addKVArg("name",self.__testname)
         self.__fioJob.addKVArg("direct","1")
         self.__fioJob.addSglArg("minimal")
-        self.__fioJob.addKVArg("ioengine","libaio")
         self.__fioJob.addSglArg("time_based")
         if self.__options == None:
             self.__fioJob.addKVArg("numjobs",str(1))
             self.__fioJob.addKVArg("iodepth",str(1))
             self.__fioJob.addKVArg("runtime",str(60))
+            self.__fioJob.addKVArg("ioengine","libaio")
         else:
             if self.getOptions().getNj() != None:
                 self.__fioJob.addKVArg("numjobs",str(self.getOptions().getNj()))
@@ -94,6 +94,17 @@ class DeviceTest(object):
                 self.__fioJob.addKVArg("iodepth",str(self.getOptions().getIod()))
             if self.getOptions().getRuntime() != None:
                 self.__fioJob.addKVArg("runtime",str(self.getOptions().getRuntime()))
+            if self.getOptions().getIOEngine() != None:
+                self.__fioJob.addKVArg("ioengine",str(self.getOptions().getIOEngine()))
+                if self.getOptions().getIOEngine() == "io_uring":
+                    if self.getOptions().getHipri() != None:
+                        self.__fioJob.addKVArg("hipri",str(self.getOptions().getHipri()))
+                    if self.getOptions().getSqthread_poll() != None:
+                        self.__fioJob.addKVArg("sqthread_poll",str(self.getOptions().getSqthread_poll()))
+                    if self.getOptions().getFixedbufs() != None:
+                        self.__fioJob.addKVArg("fixedbufs",str(self.getOptions().getFixedbufs()))
+                    if self.getOptions().getSqthread_poll_cpu() != None:
+                        self.__fioJob.addKVArg("sqthread_poll_cpu",str(self.getOptions().getSqthread_poll_cpu()))
             if self.getOptions().getXargs() != None:
                 for arg in self.getOptions().getXargs():
                     self.__fioJob.addSglArg(arg)
@@ -452,7 +463,7 @@ class SsdTPTest(DeviceTest):
     A class to carry out the Throughput test.
     '''
     ##Labels of block sizes for throughput test
-    bsLabels = ["1024k","64k","8k","4k","512",]
+    bsLabels = ["2048k","1024k","64k","8k","4k","512",]
     
     def __init__(self,testname,device,options):
         '''
@@ -544,7 +555,7 @@ class SsdTPTest(DeviceTest):
                     break
                 
                 # Use 1M block sizes sequential write for steady state detection
-                if j == "1024k":
+                if j == "2048k":
                     stdyValsWrite.append(tpWrite)
                     xrangesWrite.append(i)
                     if i > 4:
